@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1 id="balanceDisplayId"></h1>
+    <h2 id="beaverCount"></h2>
+    <button id="connect">Connect to WebSocket</button>
+    <button id="money">Money</button>
+    <button id="beaver">BuyBeaver</button>
+    <pre id="output"></pre>
+
+    <script>
+        let socket;
+
+        document.getElementById('connect').addEventListener('click', () => {
+            socket = new WebSocket('wss://localhost:7167/ws/');
+
+            socket.onopen = function () {
+                console.log('WebSocket connection established');
+                document.getElementById('output').innerText += 'WebSocket connection established\n';
+            };
+
+            socket.onmessage = function (event) {
+                console.log('Message from server: ', event.data);
+                document.getElementById('output').innerText += 'Message from server: ' + event.data + '\n';
+                const obj = JSON.parse(event.data);
+
+                if (obj.UserUpgrades) {
+                    let beavCount = obj.UserUpgrades["Beaver"];
+                    document.getElementById('beaverCount').textContent = `Beavers count: ${beavCount}`;
+                }
+
+                if (obj.Balance !== undefined) {
+                    document.getElementById('balanceDisplayId').textContent = `Balance: ${obj.Balance}`;
+                }
+            };
+
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    console.log('Connection closed cleanly');
+                } else {
+                    console.error('Connection died');
+                }
+                document.getElementById('output').innerText += 'Connection closed\n';
+            };
+
+            socket.onerror = function (error) {
+                console.error('WebSocket error: ', error);
+                document.getElementById('output').innerText += 'WebSocket error\n';
+            };
+        });
+
+        document.getElementById('money').addEventListener('click', () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ Action: 'ClickedBeaverButton' }));
+            }
+        });
+
+        document.getElementById('beaver').addEventListener('click', () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ Action: 'Beaver' }));
+            }
+        });
+    </script>
+</body>
+</html>

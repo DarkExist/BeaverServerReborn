@@ -1,0 +1,6 @@
+@BeaverServerReborn_HostAddress = https://localhost:7167/
+
+GET {{BeaverServerReborn_HostAddress}}/
+Accept: application/json
+
+###
